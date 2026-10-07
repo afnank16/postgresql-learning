@@ -1,5 +1,5 @@
 -- 6. FOREIGN KEY
--- A foreign key is a column in one table that connects to the primary key in another table to link them together
+-- A foreign key is a column in one table that connects to the primary key in another table to link them together.
 
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
