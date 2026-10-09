@@ -1,0 +1,136 @@
+-- ============================================
+-- 5. AGGREGATE FUNCTIONS
+-- ============================================
+
+-- Sample table
+CREATE TABLE employees (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50),
+    department VARCHAR(50),
+    salary NUMERIC(10,2),
+    age INT
+);
+
+-- Sample data
+INSERT INTO employees (name, department, salary, age)
+VALUES
+('Afnan', 'IT', 50000, 22),
+('Rahul', 'IT', 60000, 24),
+('Ali', 'IT', 55000, 23),
+('Priya', 'HR', 45000, 25),
+('Sneha', 'HR', 50000, 26),
+('John', 'Sales', 40000, 28),
+('David', 'Sales', 45000, 27),
+('Emma', 'Sales', 55000, 29);
+
+-- ============================================
+-- 1. COUNT()
+-- ============================================
+
+-- Count all employees
+SELECT COUNT(*) FROM employees;
+
+-- Count employees with a salary
+SELECT COUNT(salary) FROM employees;
+
+-- Count employees in IT
+SELECT COUNT(*)
+FROM employees
+WHERE department = 'IT';
+
+
+-- ============================================
+-- 2. SUM() and AVG()
+-- ============================================
+
+-- Total salary
+SELECT SUM(salary)
+FROM employees;
+
+-- Average salary
+SELECT AVG(salary)
+FROM employees;
+
+-- Total salary of IT employees
+SELECT SUM(salary)
+FROM employees
+WHERE department = 'IT';
+
+-- Average salary of IT employees
+SELECT AVG(salary)
+FROM employees
+WHERE department = 'IT';
+
+
+-- ============================================
+-- 3. MIN() and MAX()
+-- ============================================
+
+-- Lowest salary
+SELECT MIN(salary)
+FROM employees;
+
+-- Highest salary
+SELECT MAX(salary)
+FROM employees;
+
+-- Youngest employee
+SELECT MIN(age)
+FROM employees;
+
+-- Oldest employee
+SELECT MAX(age)
+FROM employees;
+
+
+-- ============================================
+-- 4. GROUP BY
+-- ============================================
+
+-- Number of employees in each department
+SELECT department, COUNT(*)
+FROM employees
+GROUP BY department;
+
+-- Total salary by department
+SELECT department, SUM(salary)
+FROM employees
+GROUP BY department;
+
+-- Average salary by department
+SELECT department, AVG(salary)
+FROM employees
+GROUP BY department;
+
+-- Minimum salary by department
+SELECT department, MIN(salary)
+FROM employees
+GROUP BY department;
+
+-- Maximum salary by department
+SELECT department, MAX(salary)
+FROM employees
+GROUP BY department;
+
+
+-- ============================================
+-- 5. HAVING
+-- ============================================
+
+-- Departments having more than 2 employees
+SELECT department, COUNT(*)
+FROM employees
+GROUP BY department
+HAVING COUNT(*) > 2;
+
+-- Departments with average salary greater than 50000
+SELECT department, AVG(salary)
+FROM employees
+GROUP BY department
+HAVING AVG(salary) > 50000;
+
+-- Departments whose total salary is greater than 100000
+SELECT department, SUM(salary)
+FROM employees
+GROUP BY department
+HAVING SUM(salary) > 100000;
