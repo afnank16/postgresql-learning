@@ -1,154 +1,90 @@
 -- ============================================
--- CHAPTER 6: JOINS
+-- 1. SUBQUERIES
+-- Find employees earning more than the average salary
 -- ============================================
 
--- Create tables
-CREATE TABLE departments (
-    department_id SERIAL PRIMARY KEY,
-    department_name VARCHAR(50) NOT NULL
+SELECT employee_name, salary
+FROM employees
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
 );
 
-CREATE TABLE employees (
-    employee_id SERIAL PRIMARY KEY,
-    employee_name VARCHAR(100) NOT NULL,
-    salary NUMERIC(10, 2),
-    department_id INT REFERENCES departments(department_id),
-    manager_id INT
+
+-- ============================================
+-- 2. CASE WHEN
+-- Categorize employees based on salary
+-- ============================================
+
+SELECT
+    employee_name,
+    salary,
+    CASE
+        WHEN salary >= 80000 THEN 'High Salary'
+        WHEN salary >= 50000 THEN 'Medium Salary'
+        ELSE 'Low Salary'
+    END AS salary_category
+FROM employees;
+
+
+-- ============================================
+-- 3. DISTINCT
+-- Get unique department IDs from employees
+-- ============================================
+
+SELECT DISTINCT department_id
+FROM employees;
+
+
+-- ============================================
+-- 4. ALIASES (AS)
+-- Rename columns in the output
+-- ============================================
+
+SELECT
+    employee_name AS name,
+    salary AS monthly_salary
+FROM employees;
+
+
+-- ============================================
+-- 5. UPDATE WITH CONDITIONS
+-- Increase salary for employees in department 1
+-- ============================================
+
+UPDATE employees
+SET salary = salary * 1.10
+WHERE department_id = 1;
+
+
+-- ============================================
+-- 6. ON DELETE CASCADE
+-- Automatically delete related records when a parent is deleted
+-- ============================================
+
+-- Example setup using separate demo tables
+CREATE TABLE demo_departments (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100)
+);
+
+CREATE TABLE demo_employees (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(100),
+    department_id INT REFERENCES demo_departments(department_id)
+        ON DELETE CASCADE
 );
 
 -- Insert sample data
-INSERT INTO departments (department_name)
-VALUES
-    ('IT'),
-    ('HR'),
-    ('Finance'),
-    ('Marketing');
+INSERT INTO demo_departments VALUES (1, 'IT');
 
-INSERT INTO employees (employee_name, salary, department_id)
-VALUES
-    ('Afnan', 50000, 1),
-    ('Rahul', 45000, 1),
-    ('Sara', 40000, 2),
-    ('Ali', 55000, 3),
-    ('Zoya', 35000, NULL);
+INSERT INTO demo_employees VALUES
+    (101, 'Afnan', 1),
+    (102, 'Rahul', 1);
 
--- ============================================
--- 1. INNER JOIN
--- Returns only matching rows from both tables
--- ============================================
+-- Deleting the department also deletes its employees
+DELETE FROM demo_departments
+WHERE department_id = 1;
 
-SELECT
-    e.employee_name,
-    d.department_name
-FROM employees e
-INNER JOIN departments d
-    ON e.department_id = d.department_id;
-
-
--- ============================================
--- 2. LEFT JOIN
--- Returns all employees, including those without
--- a matching department
--- ============================================
-
-SELECT
-    e.employee_name,
-    d.department_name
-FROM employees e
-LEFT JOIN departments d
-    ON e.department_id = d.department_id;
-
-
--- ============================================
--- 3. RIGHT JOIN
--- Returns all departments, including those
--- without any employees
--- ============================================
-
-SELECT
-    e.employee_name,
-    d.department_name
-FROM employees e
-RIGHT JOIN departments d
-    ON e.department_id = d.department_id;
-
-
--- ============================================
--- 4. ONE-TO-ONE RELATIONSHIP
--- One employee has one unique profile
--- ============================================
-
-CREATE TABLE employee_profiles (
-    profile_id SERIAL PRIMARY KEY,
-    employee_id INT UNIQUE REFERENCES employees(employee_id),
-    phone VARCHAR(15),
-    address TEXT
-);
-
-INSERT INTO employee_profiles (employee_id, phone, address)
-VALUES
-    (1, '9876543210', 'Pune'),
-    (2, '9876543211', 'Mumbai');
-
-SELECT
-    e.employee_name,
-    p.phone,
-    p.address
-FROM employees e
-INNER JOIN employee_profiles p
-    ON e.employee_id = p.employee_id;
-
-
--- ============================================
--- 5. ONE-TO-MANY RELATIONSHIP
--- One department can have many employees
--- ============================================
-
-SELECT
-    d.department_name,
-    e.employee_name
-FROM departments d
-LEFT JOIN employees e
-    ON d.department_id = e.department_id
-ORDER BY d.department_id;
-
-
--- ============================================
--- 6. MANY-TO-MANY RELATIONSHIP
--- One employee can work on multiple projects,
--- and one project can have multiple employees
--- ============================================
-
-CREATE TABLE projects (
-    project_id SERIAL PRIMARY KEY,
-    project_name VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE employee_projects (
-    employee_id INT REFERENCES employees(employee_id),
-    project_id INT REFERENCES projects(project_id),
-    PRIMARY KEY (employee_id, project_id)
-);
-
-INSERT INTO projects (project_name)
-VALUES
-    ('Website Development'),
-    ('CRM System'),
-    ('Mobile App');
-
-INSERT INTO employee_projects (employee_id, project_id)
-VALUES
-    (1, 1),
-    (1, 2),
-    (2, 1),
-    (3, 3);
-
-SELECT
-    e.employee_name,
-    p.project_name
-FROM employee_projects ep
-INNER JOIN employees e
-    ON ep.employee_id = e.employee_id
-INNER JOIN projects p
-    ON ep.project_id = p.project_id
-ORDER BY e.employee_name;
+-- Verify: returns zero rows
+SELECT * FROM demo_employees;
