@@ -1,90 +1,80 @@
--- ============================================
--- 1. SUBQUERIES
--- Find employees earning more than the average salary
--- ============================================
+-- 8. Transactions & Indexes
 
-SELECT employee_name, salary
-FROM employees
-WHERE salary > (
-    SELECT AVG(salary)
-    FROM employees
-);
+-- 1. BEGIN, COMMIT and ROLLBACK
 
-
--- ============================================
--- 2. CASE WHEN
--- Categorize employees based on salary
--- ============================================
-
-SELECT
-    employee_name,
-    salary,
-    CASE
-        WHEN salary >= 80000 THEN 'High Salary'
-        WHEN salary >= 50000 THEN 'Medium Salary'
-        ELSE 'Low Salary'
-    END AS salary_category
-FROM employees;
-
-
--- ============================================
--- 3. DISTINCT
--- Get unique department IDs from employees
--- ============================================
-
-SELECT DISTINCT department_id
-FROM employees;
-
-
--- ============================================
--- 4. ALIASES (AS)
--- Rename columns in the output
--- ============================================
-
-SELECT
-    employee_name AS name,
-    salary AS monthly_salary
-FROM employees;
-
-
--- ============================================
--- 5. UPDATE WITH CONDITIONS
--- Increase salary for employees in department 1
--- ============================================
+BEGIN;
 
 UPDATE employees
-SET salary = salary * 1.10
-WHERE department_id = 1;
+SET salary = salary + 1000
+WHERE employee_id = 1;
+
+COMMIT;
+
+-- Example of ROLLBACK
+BEGIN;
+
+UPDATE employees
+SET salary = salary + 5000
+WHERE employee_id = 1;
+
+ROLLBACK;
 
 
--- ============================================
--- 6. ON DELETE CASCADE
--- Automatically delete related records when a parent is deleted
--- ============================================
+-- 2. Understand Database Transactions
 
--- Example setup using separate demo tables
-CREATE TABLE demo_departments (
-    department_id INT PRIMARY KEY,
-    department_name VARCHAR(100)
-);
+-- A transaction groups multiple operations into one unit.
+-- Either commit all changes or roll them back.
 
-CREATE TABLE demo_employees (
-    employee_id INT PRIMARY KEY,
-    employee_name VARCHAR(100),
-    department_id INT REFERENCES demo_departments(department_id)
-        ON DELETE CASCADE
-);
+BEGIN;
 
--- Insert sample data
-INSERT INTO demo_departments VALUES (1, 'IT');
+UPDATE accounts
+SET balance = balance - 1000
+WHERE account_id = 1;
 
-INSERT INTO demo_employees VALUES
-    (101, 'Afnan', 1),
-    (102, 'Rahul', 1);
+UPDATE accounts
+SET balance = balance + 1000
+WHERE account_id = 2;
 
--- Deleting the department also deletes its employees
-DELETE FROM demo_departments
-WHERE department_id = 1;
+COMMIT;
 
--- Verify: returns zero rows
-SELECT * FROM demo_employees;
+
+-- 3. CREATE INDEX
+
+-- Create an index on a column
+CREATE INDEX idx_employees_name
+ON employees(name);
+
+-- Create an index on multiple columns
+CREATE INDEX idx_employees_name_salary
+ON employees(name, salary);
+
+-- View indexes on a table in psql
+\d employees
+
+-- List all indexes in the current database
+\di
+
+
+-- 4. Understand When Indexes Are Useful
+
+-- Query that can benefit from an index
+SELECT *
+FROM employees
+WHERE name = 'Afnan';
+
+-- Query that can benefit from an index
+SELECT *
+FROM employees
+WHERE salary > 50000;
+
+-- Check the query execution plan
+EXPLAIN
+SELECT *
+FROM employees
+WHERE name = 'Afnan';
+
+-- Delete an index
+DROP INDEX idx_employees_name;
+
+-- Delete the composite index
+DROP INDEX idx_employees_name_salary;
